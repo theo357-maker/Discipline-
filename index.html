@@ -190,6 +190,79 @@
             color: var(--primary); 
             border-left-color: var(--primary);
         }
+        /* Styles spécifiques pour les prompts d'installation */
+.platform-indicator {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: #3498db;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 11px;
+    z-index: 1000000;
+    display: none; /* Afficher pour le débogage seulement */
+}
+
+/* Badge flottant pour iOS */
+.ios-float-badge {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    background: linear-gradient(135deg, #007AFF, #5856D6);
+    color: white;
+    border-radius: 50px;
+    padding: 12px 20px;
+    box-shadow: 0 10px 30px rgba(0, 122, 255, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 99999;
+    animation: float 3s infinite ease-in-out;
+    cursor: pointer;
+}
+
+.ios-float-badge i {
+    font-size: 18px;
+}
+
+.ios-float-badge span {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Instructions iOS */
+.ios-steps {
+    counter-reset: step-counter;
+}
+
+.ios-step {
+    position: relative;
+    padding-left: 50px;
+    margin-bottom: 20px;
+}
+
+.ios-step::before {
+    counter-increment: step-counter;
+    content: counter(step-counter);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 40px;
+    height: 40px;
+    background: #007AFF;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
         
         .main-content { 
             flex: 1; 
