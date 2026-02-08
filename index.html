@@ -18,6 +18,9 @@
     <meta name="msapplication-tap-highlight" content="no">
     <meta name="theme-color" content="#3498db">
 
+  <meta name="version" content="2.1.0">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+
 <!-- iOS specific tags -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -64,6 +67,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <!-- Scripts de mise à jour -->
     <script src="update-system.js"></script>
+
+<!-- Script d'installation PWA obligatoire -->
+<script src="install-prompt.js"></script>
     <style>
         :root {
             --primary: #3498db; 
