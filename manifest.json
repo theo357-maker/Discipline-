@@ -129,3 +129,32 @@
   "prefer_related_applications": false,
   "related_applications": []
 }
+
+{
+  "display": "standalone",
+  "prefer_related_applications": false,
+  "related_applications": [],
+  
+  "screenshots": [
+    {
+      "src": "/screenshots/install-promo-1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Tableau de bord principal"
+    }
+  ],
+  
+  "features": [
+    "La meilleure application de suivi scolaire",
+    "Notifications en temps réel",
+    "Fonctionnement hors ligne",
+    "Installation rapide et facile"
+  ],
+  
+  "iarc_rating_id": "e10b-0000-0000-0000",
+  
+  "capture_links": "new-client",
+  
+  "handle_links": "preferred"
+}
