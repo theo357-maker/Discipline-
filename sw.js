@@ -443,6 +443,43 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
+// === VÉRIFIER L'ÉTAT D'INSTALLATION ===
+self.addEventListener('message', (event) => {
+    const { type, data } = event.data || {};
+    
+    switch (type) {
+        case 'CHECK_INSTALLED_STATUS':
+            const isInstalled = detectIfAppIsInstalled();
+            event.ports[0].postMessage({ installed: isInstalled });
+            break;
+            
+        case 'APP_INSTALLED':
+            console.log('🎉 Application installée signalée');
+            localStorage.setItem('pwa_installed', 'true');
+            break;
+    }
+});
+
+function detectIfAppIsInstalled() {
+    // Cette fonction peut être appelée depuis le Service Worker
+    // pour vérifier si l'app est installée
+    return localStorage.getItem('pwa_installed') === 'true';
+}
+
+// === INTERCEPTER LES REQUÊTES POUR DÉTECTER L'INSTALLATION ===
+self.addEventListener('fetch', (event) => {
+    // Vérifier les requêtes qui pourraient indiquer une installation
+    if (event.request.url.includes('display-mode')) {
+        // Ce header peut indiquer le mode d'affichage
+        event.respondWith(
+            fetch(event.request).then(response => {
+                // Analyser la réponse pour détecter l'installation
+                return response;
+            })
+        );
+    }
+});
+
 // === FONCTION UTILITAIRE IMPORT SCRIPTS ===
 function importScripts(url) {
   return new Promise((resolve, reject) => {
