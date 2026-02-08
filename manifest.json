@@ -1,111 +1,82 @@
 {
-  "name": "CS La Colombe - Discipline",
-  "short_name": "Discipline",
-  "description": "Portail de gestion de la discipline scolaire",
+  "name": "hybrilink",
+  "short_name": "hybrilink",
+  "description": "Solution complète de gestion de ecoles",
   "start_url": "index.html",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui", "window-controls-overlay"],
-  "orientation": "portrait-primary",
   "background_color": "#3498db",
   "theme_color": "#3498db",
-  "categories": ["education", "productivity"],
-  "lang": "fr",
-  "dir": "ltr",
+  "orientation": "portrait-primary",
   "scope": "/",
-  
+  "lang": "fr",
+  "categories": ["business", "productivity", "utilities"],
   "icons": [
     {
-      "src": "/icon-72x72.png",
+      "src": "icon-72x72.png",
       "sizes": "72x72",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable any"
     },
     {
-      "src": "/icon-96x96.png",
+      "src": "icon-96x96.png",
       "sizes": "96x96",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable any"
     },
     {
-      "src": "/icon-128x128.png",
+      "src": "icon-128x128.png",
       "sizes": "128x128",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable any"
     },
     {
-      "src": "/icon-144x144.png",
+      "src": "icon-144x144.png",
       "sizes": "144x144",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable any"
     },
     {
-      "src": "/icon-152x152.png",
+      "src": "icon-152x152.png",
       "sizes": "152x152",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable any"
     },
     {
-      "src": "/icon-192x192.png",
+      "src": "icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable any"
     },
     {
-      "src": "/icon-256x256.png",
-      "sizes": "256x256",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icon-384x384.png",
+      "src": "icon-384x384.png",
       "sizes": "384x384",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable any"
     },
     {
-      "src": "/icon-512x512.png",
+      "src": "icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable any"
     }
   ],
-  
-  "shortcuts": [
-    {
-      "name": "Tableau de bord",
-      "short_name": "Dashboard",
-      "description": "Accéder au tableau de bord",
-      "url": "/?page=dashboard"
-    },
-    {
-      "name": "Présence enseignants",
-      "short_name": "Présence",
-      "description": "Gérer la présence des enseignants",
-      "url": "/?page=teacher-attendance"
-    },
-    {
-      "name": "Incidents élèves",
-      "short_name": "Incidents",
-      "description": "Gérer les incidents élèves",
-      "url": "/?page=student-incidents"
-    }
-  ],
-  
   "screenshots": [
     {
-      "src": "/screenshots/dashboard.png",
-      "sizes": "1080x1920",
+      "src": "screenshot1.png",
+      "sizes": "1280x720",
       "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Tableau de bord discipline"
+      "form_factor": "wide",
+      "label": "Tableau de bord TheoVêt"
     },
     {
-      "src": "/screenshots/presence.png",
-      "sizes": "1080x1920",
+      "src": "creenshot2.png",
+      "sizes": "750x1334",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Gestion des présences"
+      "label": "Gestion des ventes"
     }
+  ],
+}
   ],
   
   "share_target": {
