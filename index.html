@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -18,39 +18,10 @@
     <meta name="msapplication-tap-highlight" content="no">
     <meta name="theme-color" content="#3498db">
 
-
-  <meta name="version" content="2.1.0">
+    <!-- Service Worker et mise à jour -->
+      <meta name="version" content="2.1.0">
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 
-
-<!-- iOS specific tags -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="CS La Colombe">
-<link rel="apple-touch-icon" href="/icon-192x192.png">
-<link rel="apple-touch-icon" sizes="152x152" href="/icon-152x152.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/icon-192x192.png">
-<link rel="apple-touch-icon" sizes="167x167" href="/icon-192x192.png">
-
-<!-- Splash Screen pour iOS -->
-<link rel="apple-touch-startup-image" 
-      href="/splashscreens/iphone5_splash.png"
-      media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" 
-      href="/splashscreens/iphone6_splash.png"
-      media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" 
-      href="/splashscreens/iphoneplus_splash.png"
-      media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" 
-      href="/splashscreens/iphonex_splash.png"
-      media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" 
-      href="/splashscreens/ipad_splash.png"
-      media="(min-device-width: 768px) and (max-device-width: 1024px) and (-webkit-min-device-pixel-ratio: 2) and (orientation: portrait)">
-
-    <!-- Service Worker et mise à jour -->
-    
 
     <!-- Apple Touch Icons -->
     <link rel="apple-touch-icon" href="icon-192x192.png">
@@ -69,9 +40,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <!-- Scripts de mise à jour -->
     <script src="update-system.js"></script>
-
-<!-- Script d'installation PWA obligatoire -->
-<script src="install-prompt.js"></script>
     <style>
         :root {
             --primary: #3498db; 
@@ -192,79 +160,6 @@
             color: var(--primary); 
             border-left-color: var(--primary);
         }
-        /* Styles spécifiques pour les prompts d'installation */
-.platform-indicator {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    background: #3498db;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 15px;
-    font-size: 11px;
-    z-index: 1000000;
-    display: none; /* Afficher pour le débogage seulement */
-}
-
-/* Badge flottant pour iOS */
-.ios-float-badge {
-    position: fixed;
-    bottom: 100px;
-    right: 20px;
-    background: linear-gradient(135deg, #007AFF, #5856D6);
-    color: white;
-    border-radius: 50px;
-    padding: 12px 20px;
-    box-shadow: 0 10px 30px rgba(0, 122, 255, 0.3);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    z-index: 99999;
-    animation: float 3s infinite ease-in-out;
-    cursor: pointer;
-}
-
-.ios-float-badge i {
-    font-size: 18px;
-}
-
-.ios-float-badge span {
-    font-weight: 600;
-    font-size: 14px;
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
-
-/* Instructions iOS */
-.ios-steps {
-    counter-reset: step-counter;
-}
-
-.ios-step {
-    position: relative;
-    padding-left: 50px;
-    margin-bottom: 20px;
-}
-
-.ios-step::before {
-    counter-increment: step-counter;
-    content: counter(step-counter);
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 40px;
-    height: 40px;
-    background: #007AFF;
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-}
         
         .main-content { 
             flex: 1; 
@@ -734,115 +629,6 @@
         .progress-container {
             margin: 1.5rem 0;
         }
-/* Styles pour le modal d'installation */
-#install-prompt-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.85);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 999999;
-    animation: fadeIn 0.3s ease;
-}
-
-#install-prompt-modal .modal-content {
-    background: white;
-    border-radius: 20px;
-    padding: 30px;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    text-align: center;
-    animation: slideUp 0.3s ease;
-}
-
-#install-prompt-modal h2 {
-    color: #2c3e50;
-    margin-bottom: 15px;
-    font-size: 1.5rem;
-}
-
-#install-prompt-modal p {
-    color: #555;
-    margin-bottom: 25px;
-    line-height: 1.6;
-}
-
-#install-button {
-    background: linear-gradient(135deg, #3498db, #2c3e50);
-    color: white;
-    border: none;
-    padding: 15px 30px;
-    border-radius: 50px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    width: 100%;
-    margin-bottom: 10px;
-}
-
-#install-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
-}
-
-#later-button {
-    background: transparent;
-    color: #666;
-    border: 1px solid #ddd;
-    padding: 12px 30px;
-    border-radius: 50px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-    width: 100%;
-}
-
-#later-button:hover {
-    background: #f8f9fa;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes slideUp {
-    from { transform: translateY(50px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-/* Badge d'installation pour iOS */
-.ios-install-badge {
-    position: fixed;
-    bottom: 80px;
-    right: 20px;
-    background: white;
-    border-radius: 50px;
-    padding: 10px 20px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    z-index: 99999;
-    animation: bounce 2s infinite;
-}
-
-.ios-install-badge i {
-    color: #007AFF;
-    font-size: 20px;
-}
-
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
-}
-
 
         .progress-bar {
             height: 20px;
@@ -3224,73 +3010,463 @@
         }
     });
     </script>
+
+<!-- Script pour la notification d'installation PWA -->
 <script>
-// windows-mac-install.js
-if (navigator.userAgent.includes('Windows') || navigator.userAgent.includes('Macintosh')) {
-    // Afficher un message spécial pour les ordinateurs
-    setTimeout(() => {
-        if (!window.matchMedia('(display-mode: standalone)').matches) {
-            const desktopPrompt = document.createElement('div');
-            desktopPrompt.id = 'desktop-install-prompt';
-            desktopPrompt.style.cssText = `
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                background: white;
-                border-radius: 15px;
-                padding: 20px;
-                box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-                z-index: 99999;
-                max-width: 300px;
-                animation: slideInRight 0.3s ease;
-                border-left: 5px solid #3498db;
-            `;
-            
-            desktopPrompt.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-                    <i class="fas fa-desktop" style="font-size: 24px; color: #3498db;"></i>
-                    <div>
-                        <h4 style="margin: 0; color: #2c3e50;">Installer l'application</h4>
-                        <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">Pour un accès rapide</p>
-                    </div>
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <button id="install-desktop-btn" 
-                            style="flex: 1; background: #3498db; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer;">
-                        Installer
-                    </button>
-                    <button id="close-desktop-prompt" 
-                            style="background: transparent; color: #666; border: 1px solid #ddd; padding: 10px; border-radius: 8px; cursor: pointer;">
-                        ×
-                    </button>
-                </div>
-            `;
-            
-            document.body.appendChild(desktopPrompt);
-            
-            document.getElementById('install-desktop-btn').addEventListener('click', () => {
-                if (window.installPrompt) {
-                    window.installPrompt.handleInstall();
-                }
-                desktopPrompt.remove();
-            });
-            
-            document.getElementById('close-desktop-prompt').addEventListener('click', () => {
-                desktopPrompt.remove();
-                localStorage.setItem('desktop_prompt_closed', 'true');
-            });
+// Notification d'installation PWA intelligente
+(function() {
+    // Attendre que la page soit complètement chargée
+    window.addEventListener('load', () => {
+        // Attendre 3 secondes avant de vérifier
+        setTimeout(() => {
+            showPWAInstallPrompt();
+        }, 3000);
+    });
+
+    async function showPWAInstallPrompt() {
+        // Vérifier si l'app est déjà installée
+        if (isAppInstalled()) {
+            console.log('✅ Application déjà installée - Pas de notification');
+            return;
         }
-    }, 5000);
+
+        // Vérifier si on est sur un navigateur mobile/desktop compatible
+        if (!shouldShowInstallPrompt()) {
+            console.log('🌐 Navigateur non compatible pour l\'installation');
+            return;
+        }
+
+        // Vérifier si l'utilisateur a déjà refusé récemment
+        if (hasUserDismissedRecently()) {
+            console.log('⏰ L\'utilisateur a refusé récemment');
+            return;
+        }
+
+        // Créer et afficher la notification
+        createInstallNotification();
+    }
+
+    function isAppInstalled() {
+        // Méthodes pour détecter si l'app est installée
+        const detectionMethods = [
+            // Mode standalone (PWA installée)
+            window.matchMedia('(display-mode: standalone)').matches ||
+            window.matchMedia('(display-mode: minimal-ui)').matches ||
+            window.matchMedia('(display-mode: fullscreen)').matches,
+            
+            // iOS (ajouté à l'écran d'accueil)
+            ('standalone' in window.navigator) && window.navigator.standalone,
+            
+            // Android (via user agent)
+            /android/i.test(navigator.userAgent) && /wv|version\/\d/.test(navigator.userAgent),
+            
+            // Vérification via localStorage
+            localStorage.getItem('pwa_installed') === 'true'
+        ];
+
+        return detectionMethods.some(method => method === true);
+    }
+
+    function shouldShowInstallPrompt() {
+        const userAgent = navigator.userAgent.toLowerCase();
+        const isMobile = /mobile|android|iphone|ipad|ipod/i.test(userAgent);
+        const isDesktop = !isMobile && /windows|macintosh|linux/i.test(userAgent);
+        
+        // Vérifier les conditions d'affichage
+        const conditions = [
+            // Doit être en HTTPS (requis pour PWA)
+            window.location.protocol === 'https:',
+            
+            // Doit supporter les Service Workers
+            'serviceWorker' in navigator,
+            
+            // Doit être lancé depuis un navigateur
+            !window.matchMedia('(display-mode: standalone)').matches,
+            
+            // Doit être un appareil compatible
+            isMobile || isDesktop
+        ];
+
+        return conditions.every(condition => condition === true);
+    }
+
+    function hasUserDismissedRecently() {
+        const lastDismissal = localStorage.getItem('pwa_prompt_dismissed');
+        if (!lastDismissal) return false;
+        
+        const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+        return parseInt(lastDismissal) > oneWeekAgo;
+    }
+
+    function createInstallNotification() {
+        // Vérifier les capacités de notification
+        if (!('Notification' in window)) {
+            console.log('❌ Ce navigateur ne supporte pas les notifications');
+            showFallbackInstallPrompt();
+            return;
+        }
+
+        // Demander la permission si nécessaire
+        if (Notification.permission === 'default') {
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    showNativeInstallNotification();
+                } else {
+                    showFallbackInstallPrompt();
+                }
+            });
+        } else if (Notification.permission === 'granted') {
+            showNativeInstallNotification();
+        } else {
+            showFallbackInstallPrompt();
+        }
+    }
+
+    function showNativeInstallNotification() {
+        const iconUrl = getAppIconUrl();
+        
+        const notification = new Notification('📲 Installer l\'application', {
+            body: 'Installez CS La Colombe pour une meilleure expérience et des notifications hors ligne',
+            icon: iconUrl,
+            badge: iconUrl,
+            image: iconUrl,
+            tag: 'pwa-install-prompt',
+            requireInteraction: true,
+            silent: false,
+            vibrate: [200, 100, 200],
+            data: {
+                url: window.location.href,
+                timestamp: Date.now()
+            },
+            actions: [
+                {
+                    action: 'install',
+                    title: '📥 Installer',
+                    icon: iconUrl
+                },
+                {
+                    action: 'dismiss',
+                    title: '❌ Plus tard',
+                    icon: iconUrl
+                }
+            ]
+        });
+
+        notification.onclick = (event) => {
+            event.preventDefault();
+            if (event.action === 'install') {
+                triggerPWAInstallation();
+            } else if (event.action === 'dismiss') {
+                localStorage.setItem('pwa_prompt_dismissed', Date.now().toString());
+            }
+            notification.close();
+        };
+
+        notification.onclose = () => {
+            localStorage.setItem('pwa_prompt_dismissed', Date.now().toString());
+        };
+
+        // Fermer automatiquement après 30 secondes
+        setTimeout(() => notification.close(), 30000);
+    }
+
+    function showFallbackInstallPrompt() {
+        // Créer une notification HTML pour les navigateurs sans support
+        const toast = document.createElement('div');
+        toast.id = 'pwa-install-toast';
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 16px;
+            max-width: 350px;
+            z-index: 10000;
+            border-left: 5px solid #3498db;
+            animation: slideIn 0.3s ease;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        `;
+
+        // Ajouter l'icône de l'application
+        const iconUrl = getAppIconUrl();
+        
+        toast.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                <img src="${iconUrl}" 
+                     alt="CS La Colombe" 
+                     style="width: 48px; height: 48px; border-radius: 10px;">
+                <div>
+                    <strong style="display: block; font-size: 16px; color: #2c3e50;">
+                        📲 Installer l'application
+                    </strong>
+                    <span style="font-size: 14px; color: #666;">
+                        Pour une meilleure expérience
+                    </span>
+                </div>
+            </div>
+            <p style="margin: 0 0 16px 0; color: #555; font-size: 14px;">
+                Profitez des notifications hors ligne, d'un lancement rapide 
+                et d'une expérience optimisée sur votre appareil.
+            </p>
+            <div style="display: flex; gap: 8px;">
+                <button id="pwa-install-btn" 
+                        style="flex: 1; background: #3498db; color: white; 
+                               border: none; padding: 10px 16px; 
+                               border-radius: 8px; font-weight: 600;
+                               cursor: pointer; font-size: 14px;">
+                    📥 Installer
+                </button>
+                <button id="pwa-dismiss-btn" 
+                        style="background: #f8f9fa; color: #666; 
+                               border: 1px solid #ddd; padding: 10px 16px; 
+                               border-radius: 8px; font-weight: 500;
+                               cursor: pointer; font-size: 14px;">
+                    ❌ Plus tard
+                </button>
+            </div>
+        `;
+
+        document.body.appendChild(toast);
+
+        // Ajouter l'animation CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Gérer les clics
+        document.getElementById('pwa-install-btn').onclick = triggerPWAInstallation;
+        document.getElementById('pwa-dismiss-btn').onclick = () => {
+            toast.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+            localStorage.setItem('pwa_prompt_dismissed', Date.now().toString());
+        };
+
+        // Fermer automatiquement après 30 secondes
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+                localStorage.setItem('pwa_prompt_dismissed', Date.now().toString());
+            }
+        }, 30000);
+    }
+
+    function getAppIconUrl() {
+        // Essayer différents chemins d'icône
+        const iconPaths = [
+            '/icon-192x192.png',
+            '/icon-512x512.png',
+            'icon-192x192.png',
+            'icon-512x512.png',
+            './icon-192x192.png',
+            './icon-512x512.png'
+        ];
+
+        // Vérifier quelle icône existe
+        for (const path of iconPaths) {
+            // Pour simplifier, retourner le chemin attendu
+            return path;
+        }
+
+        // Fallback vers une icône générique
+        return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iOTYiIGN5PSI5NiIgcj0iOTYiIGZpbGw9IiMzNDk4REIiLz48cGF0aCBkPSJNMTIwIDEyMEg3MlY3Mmg0OHY0OHoiIGZpbGw9IndoaXRlIi8+PC9zdmc+';
+    }
+
+    async function triggerPWAInstallation() {
+        // Détection du support BeforeInstallPromptEvent
+        let deferredPrompt;
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Afficher l'invite d'installation native
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('✅ Installation acceptée');
+                        localStorage.setItem('pwa_installed', 'true');
+                        showInstallSuccessMessage();
+                    } else {
+                        console.log('❌ Installation refusée');
+                        localStorage.setItem('pwa_prompt_dismissed', Date.now().toString());
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        });
+
+        // Si beforeinstallprompt n'est pas supporté, donner des instructions
+        setTimeout(() => {
+            if (!deferredPrompt) {
+                showManualInstallInstructions();
+            }
+        }, 1000);
+    }
+
+    function showManualInstallInstructions() {
+        const userAgent = navigator.userAgent.toLowerCase();
+        const isIOS = /iphone|ipad|ipod/.test(userAgent);
+        const isAndroid = /android/.test(userAgent);
+        const isChrome = /chrome/.test(userAgent) && !/edge/.test(userAgent);
+        const isSafari = /safari/.test(userAgent) && !/chrome/.test(userAgent);
+        
+        let instructions = '';
+        
+        if (isIOS && isSafari) {
+            instructions = `
+                <div style="padding: 20px; max-width: 400px; background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                    <h3 style="margin-top: 0; color: #2c3e50;">📱 Installation sur iOS</h3>
+                    <ol style="text-align: left; color: #555;">
+                        <li>Appuyez sur l'icône de partage <strong>⎋</strong></li>
+                        <li>Sélectionnez <strong>"Sur l'écran d'accueil"</strong></li>
+                        <li>Appuyez sur <strong>"Ajouter"</strong></li>
+                    </ol>
+                    <img src="https://img.icons8.com/color/96/000000/iphone-home.png" 
+                         alt="iOS installation" 
+                         style="width: 96px; height: 96px;">
+                </div>
+            `;
+        } else if (isAndroid && isChrome) {
+            instructions = `
+                <div style="padding: 20px; max-width: 400px; background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                    <h3 style="margin-top: 0; color: #2c3e50;">🤖 Installation sur Android</h3>
+                    <ol style="text-align: left; color: #555;">
+                        <li>Appuyez sur les trois points <strong>⋮</strong></li>
+                        <li>Sélectionnez <strong>"Ajouter à l'écran d'accueil"</strong></li>
+                        <li>Appuyez sur <strong>"Ajouter"</strong></li>
+                    </ol>
+                    <img src="https://img.icons8.com/color/96/000000/android-os.png" 
+                         alt="Android installation" 
+                         style="width: 96px; height: 96px;">
+                </div>
+            `;
+        } else {
+            instructions = `
+                <div style="padding: 20px; max-width: 400px; background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                    <h3 style="margin-top: 0; color: #2c3e50;">💻 Installation sur ordinateur</h3>
+                    <p style="color: #555;">
+                        Cliquez sur l'icône <strong>"Installer"</strong> dans la barre d'adresse 
+                        ou utilisez le menu de votre navigateur.
+                    </p>
+                    <img src="https://img.icons8.com/color/96/000000/install.png" 
+                         alt="Desktop installation" 
+                         style="width: 96px; height: 96px;">
+                </div>
+            `;
+        }
+        
+        // Afficher les instructions dans un modal
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+            padding: 20px;
+        `;
+        
+        modal.innerHTML = instructions + `
+            <button style="position: absolute; top: 20px; right: 20px; 
+                           background: none; border: none; font-size: 24px; 
+                           color: white; cursor: pointer;">&times;</button>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Fermer le modal
+        modal.querySelector('button').onclick = () => {
+            modal.style.opacity = '0';
+            setTimeout(() => modal.remove(), 300);
+        };
+        
+        // Fermer automatiquement après 15 secondes
+        setTimeout(() => {
+            if (modal.parentNode) {
+                modal.style.opacity = '0';
+                setTimeout(() => modal.remove(), 300);
+            }
+        }, 15000);
+    }
+
+    function showInstallSuccessMessage() {
+        const successMsg = document.createElement('div');
+        successMsg.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #27ae60;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+            font-weight: 500;
+        `;
+        
+        successMsg.innerHTML = `
+            ✅ Installation réussie ! L'application est maintenant disponible.
+        `;
+        
+        document.body.appendChild(successMsg);
+        
+        // Supprimer après 5 secondes
+        setTimeout(() => {
+            successMsg.style.opacity = '0';
+            setTimeout(() => successMsg.remove(), 300);
+        }, 5000);
+    }
+
+    // Surveiller les changements d'état d'installation
+    window.addEventListener('appinstalled', (evt) => {
+        console.log('🎉 Application installée avec succès');
+        localStorage.setItem('pwa_installed', 'true');
+        
+        // Fermer toutes les notifications d'installation
+        document.querySelectorAll('#pwa-install-toast, .pwa-install-modal').forEach(el => {
+            el.remove();
+        });
+    });
+})();
+</script>
+
+<style>
+/* Styles supplémentaires pour la notification */
+@media (max-width: 480px) {
+    #pwa-install-toast {
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        max-width: none;
+    }
 }
 
-
-    
-
-        
-    </script>
-
-
-
-
+/* Styles pour le mode installé */
+@media (display-mode: standalone) {
+    body::before {
+        display: none;
+    }
+}
+</style>
 </body>
-</html>
+</html> 
