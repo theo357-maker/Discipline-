@@ -1,59 +1,121 @@
-// install-prompt.js - Gestionnaire d'installation PWA multi-plateformes
+// install-prompt.js - Version corrigée avec détection précise
 class InstallPrompt {
     constructor() {
         this.deferredPrompt = null;
-        this.isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        this.isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                          window.navigator.standalone || 
-                          document.referrer.includes('android-app://');
-        this.installEvent = null;
+        this.isStandalone = this.checkIfStandalone();
+        this.platform = this.detectPlatform();
+        this.browser = this.detectBrowser();
+        
+        console.log('📱 Plateforme détectée:', this.platform);
+        console.log('🌐 Navigateur détecté:', this.browser);
         
         this.init();
     }
 
-    init() {
-        console.log('🔧 Initialisation du prompt d\'installation');
+    detectPlatform() {
+        const userAgent = navigator.userAgent.toLowerCase();
+        const platform = navigator.platform.toLowerCase();
         
-        // Événement pour Chrome/Edge/Opera
-        window.addEventListener('beforeinstallprompt', (e) => {
-            console.log('📱 Événement beforeinstallprompt déclenché');
-            e.preventDefault();
-            this.deferredPrompt = e;
-            this.installEvent = e;
-            
-            // Afficher le prompt après un délai
-            setTimeout(() => {
-                this.showInstallPrompt();
-            }, 3000);
-        });
-
-        // Pour iOS - Vérifier si on peut afficher le prompt d'installation
-        if (this.isIOS) {
-            setTimeout(() => {
-                this.showIOSInstallPrompt();
-            }, 3000);
+        // Détection iOS précise
+        if (/ipad|iphone|ipod/.test(userAgent) && !window.MSStream) {
+            return 'ios';
         }
-
-        // Pour les autres navigateurs qui ne supportent pas beforeinstallprompt
-        if (!this.deferredPrompt && !this.isIOS) {
-            setTimeout(() => {
-                this.showGenericInstallPrompt();
-            }, 3000);
+        
+        // Détection Android précise
+        if (/android/.test(userAgent)) {
+            return 'android';
         }
+        
+        // Détection Windows
+        if (platform.includes('win') || userAgent.includes('win')) {
+            return 'windows';
+        }
+        
+        // Détection Mac
+        if (platform.includes('mac') || userAgent.includes('mac')) {
+            return 'mac';
+        }
+        
+        // Détection Linux
+        if (platform.includes('linux') && !userAgent.includes('android')) {
+            return 'linux';
+        }
+        
+        return 'unknown';
+    }
 
-        // Détecter si l'application est déjà installée
+    detectBrowser() {
+        const userAgent = navigator.userAgent;
+        
+        if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) {
+            return { name: 'Chrome', icon: 'fab fa-chrome', color: '#4285F4' };
+        } else if (userAgent.includes('Firefox')) {
+            return { name: 'Firefox', icon: 'fab fa-firefox', color: '#FF7139' };
+        } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+            return { name: 'Safari', icon: 'fab fa-safari', color: '#0066FF' };
+        } else if (userAgent.includes('Edg')) {
+            return { name: 'Edge', icon: 'fab fa-edge', color: '#0078D7' };
+        } else if (userAgent.includes('Opera') || userAgent.includes('OPR')) {
+            return { name: 'Opera', icon: 'fab fa-opera', color: '#FF1B2D' };
+        } else {
+            return { name: 'Navigateur', icon: 'fas fa-globe', color: '#3498db' };
+        }
+    }
+
+    checkIfStandalone() {
+        return window.matchMedia('(display-mode: standalone)').matches || 
+               window.navigator.standalone ||
+               document.referrer.includes('android-app://');
+    }
+
+    init() {
         if (this.isStandalone) {
             console.log('✅ Application déjà installée');
             return;
         }
+        
+        // Événement pour Chrome/Edge/Opera sur Windows/Android/Linux/Mac
+        if (this.platform !== 'ios') {
+            window.addEventListener('beforeinstallprompt', (e) => {
+                console.log('📱 Événement beforeinstallprompt disponible');
+                e.preventDefault();
+                this.deferredPrompt = e;
+                
+                // Afficher le prompt après 3 secondes
+                setTimeout(() => {
+                    this.showInstallPrompt();
+                }, 3000);
+            });
+        }
+        
+        // Pour iOS - Toujours afficher le prompt (pas d'API beforeinstallprompt)
+        if (this.platform === 'ios') {
+            setTimeout(() => {
+                this.showInstallPrompt();
+            }, 3000);
+        }
+        
+        // Pour les autres navigateurs sans support beforeinstallprompt
+        setTimeout(() => {
+            if (!this.deferredPrompt && this.platform !== 'ios') {
+                this.showInstallPrompt();
+            }
+        }, 5000);
     }
 
     showInstallPrompt() {
         if (this.isStandalone) return;
         
-        console.log('📲 Affichage du prompt d\'installation');
+        console.log('📲 Affichage du prompt adapté à:', this.platform, this.browser.name);
         
-        // Créer le modal d'installation
+        const modal = this.createModal();
+        document.body.appendChild(modal);
+        
+        this.addAnimationStyles();
+        this.setupModalEvents();
+    }
+
+    createModal() {
         const modal = document.createElement('div');
         modal.id = 'install-prompt-modal';
         modal.style.cssText = `
@@ -62,7 +124,7 @@ class InstallPrompt {
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -80,100 +142,123 @@ class InstallPrompt {
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             text-align: center;
             animation: slideUp 0.3s ease;
+            position: relative;
         `;
 
-        // Déterminer le message selon l'appareil
-        let installMessage = '';
-        let installButtonText = '';
+        // Message personnalisé selon la plateforme
+        const content = this.getPlatformSpecificContent();
+        modalContent.innerHTML = content;
+
+        modal.appendChild(modalContent);
+        return modal;
+    }
+
+    getPlatformSpecificContent() {
+        let message, buttonText, instructions;
         
-        if (this.isIOS) {
-            installMessage = `
-                <div style="margin-bottom: 20px;">
-                    <i class="fas fa-mobile-alt" style="font-size: 48px; color: #3498db; margin-bottom: 15px;"></i>
-                    <h2 style="color: #2c3e50; margin-bottom: 10px;">Installer l'application</h2>
-                    <p style="color: #555; margin-bottom: 20px; line-height: 1.6;">
-                        Pour une meilleure expérience, installez notre application :
-                    </p>
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: left;">
-                        <p style="margin: 5px 0;"><strong>Sur iPhone/iPad :</strong></p>
-                        <ol style="margin: 10px 0; padding-left: 20px;">
-                            <li>Appuyez sur le bouton <span style="color: #3498db;">Partager</span> <i class="fas fa-share-alt"></i></li>
-                            <li>Faites défiler vers le bas</li>
-                            <li>Sélectionnez <span style="color: #3498db;">"Sur l'écran d'accueil"</span></li>
-                            <li>Appuyez sur <span style="color: #3498db;">"Ajouter"</span></li>
-                        </ol>
+        switch (this.platform) {
+            case 'ios':
+                message = `
+                    <div style="margin-bottom: 20px;">
+                        <i class="fab fa-apple" style="font-size: 48px; color: #000; margin-bottom: 15px;"></i>
+                        <h2 style="color: #2c3e50; margin-bottom: 10px;">Installation sur iPhone/iPad</h2>
+                        <p style="color: #555; margin-bottom: 20px; line-height: 1.6;">
+                            Pour installer l'application sur votre appareil Apple :
+                        </p>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: left;">
+                            <ol style="margin: 0; padding-left: 20px;">
+                                <li>Ouvrez cette page dans <strong>Safari</strong></li>
+                                <li>Appuyez sur <span style="color: #007AFF;">Partager</span> <i class="fas fa-share-alt"></i></li>
+                                <li>Faites défiler et sélectionnez <span style="color: #007AFF;">"Sur l'écran d'accueil"</span></li>
+                                <li>Appuyez sur <span style="color: #007AFF;">"Ajouter"</span></li>
+                            </ol>
+                        </div>
                     </div>
-                </div>
-            `;
-            installButtonText = 'Voir les instructions';
-        } else if (navigator.userAgent.includes('Chrome')) {
-            installMessage = `
-                <div style="margin-bottom: 20px;">
-                    <i class="fas fa-chrome" style="font-size: 48px; color: #4285F4; margin-bottom: 15px;"></i>
-                    <h2 style="color: #2c3e50; margin-bottom: 10px;">Installer l'application</h2>
-                    <p style="color: #555; margin-bottom: 20px; line-height: 1.6;">
-                        Installez l'application pour un accès rapide et une meilleure expérience.
-                        Vous pourrez y accéder depuis votre écran d'accueil.
-                    </p>
-                </div>
-            `;
-            installButtonText = 'Installer maintenant';
-        } else if (navigator.userAgent.includes('Firefox')) {
-            installMessage = `
-                <div style="margin-bottom: 20px;">
-                    <i class="fab fa-firefox" style="font-size: 48px; color: #FF7139; margin-bottom: 15px;"></i>
-                    <h2 style="color: #2c3e50; margin-bottom: 10px;">Installer l'application</h2>
-                    <p style="color: #555; margin-bottom: 20px; line-height: 1.6;">
-                        Dans Firefox, cliquez sur le menu (trois lignes) et sélectionnez
-                        "Installer" ou "Ajouter à l'écran d'accueil".
-                    </p>
-                </div>
-            `;
-            installButtonText = 'Commencer l\'installation';
-        } else if (navigator.userAgent.includes('Safari') && !this.isIOS) {
-            installMessage = `
-                <div style="margin-bottom: 20px;">
-                    <i class="fab fa-safari" style="font-size: 48px; color: #0066FF; margin-bottom: 15px;"></i>
-                    <h2 style="color: #2c3e50; margin-bottom: 10px;">Installer l'application</h2>
-                    <p style="color: #555; margin-bottom: 20px; line-height: 1.6;">
-                        Dans Safari, cliquez sur "Partager" et sélectionnez
-                        "Ajouter à l'écran d'accueil".
-                    </p>
-                </div>
-            `;
-            installButtonText = 'Voir comment installer';
-        } else if (navigator.userAgent.includes('Edge')) {
-            installMessage = `
-                <div style="margin-bottom: 20px;">
-                    <i class="fab fa-edge" style="font-size: 48px; color: #0078D7; margin-bottom: 15px;"></i>
-                    <h2 style="color: #2c3e50; margin-bottom: 10px;">Installer l'application</h2>
-                    <p style="color: #555; margin-bottom: 20px; line-height: 1.6;">
-                        Dans Edge, cliquez sur le menu (trois points) et sélectionnez
-                        "Applications" puis "Installer cette application".
-                    </p>
-                </div>
-            `;
-            installButtonText = 'Installer l\'application';
-        } else {
-            installMessage = `
-                <div style="margin-bottom: 20px;">
-                    <i class="fas fa-download" style="font-size: 48px; color: #3498db; margin-bottom: 15px;"></i>
-                    <h2 style="color: #2c3e50; margin-bottom: 10px;">Installer l'application</h2>
-                    <p style="color: #555; margin-bottom: 20px; line-height: 1.6;">
-                        Pour une meilleure expérience, installez notre application.
-                        Consultez les instructions d'installation pour votre navigateur.
-                    </p>
-                </div>
-            `;
-            installButtonText = 'Comment installer';
+                `;
+                buttonText = 'Voir les instructions détaillées';
+                instructions = 'ios';
+                break;
+
+            case 'android':
+                if (this.browser.name === 'Chrome') {
+                    message = `
+                        <div style="margin-bottom: 20px;">
+                            <i class="fab fa-android" style="font-size: 48px; color: #3DDC84; margin-bottom: 15px;"></i>
+                            <h2 style="color: #2c3e50; margin-bottom: 10px;">Installation sur Android</h2>
+                            <p style="color: #555; margin-bottom: 20px; line-height: 1.6;">
+                                Installez l'application pour un accès rapide depuis votre écran d'accueil.
+                            </p>
+                        </div>
+                    `;
+                    buttonText = 'Installer maintenant';
+                    instructions = 'chrome';
+                } else {
+                    message = `
+                        <div style="margin-bottom: 20px;">
+                            <i class="fab fa-android" style="font-size: 48px; color: #3DDC84; margin-bottom: 15px;"></i>
+                            <h2 style="color: #2c3e50; margin-bottom: 10px;">Installation sur Android</h2>
+                            <p style="color: #555; margin-bottom: 20px; line-height: 1.6;">
+                                Ouvrez dans Chrome pour l'installation automatique,
+                                ou cherchez "Ajouter à l'écran d'accueil" dans le menu de ${this.browser.name}.
+                            </p>
+                        </div>
+                    `;
+                    buttonText = 'Comment installer';
+                    instructions = 'android';
+                }
+                break;
+
+            case 'windows':
+                message = `
+                    <div style="margin-bottom: 20px;">
+                        <i class="fab fa-windows" style="font-size: 48px; color: #0078D7; margin-bottom: 15px;"></i>
+                        <h2 style="color: #2c3e50; margin-bottom: 10px;">Installation sur Windows</h2>
+                        <p style="color: #555; margin-bottom: 20px; line-height: 1.6;">
+                            Installez l'application comme un programme natif sur votre PC.
+                            Cliquez sur "Installer" pour commencer.
+                        </p>
+                    </div>
+                `;
+                buttonText = 'Installer l\'application';
+                instructions = 'windows';
+                break;
+
+            case 'mac':
+                message = `
+                    <div style="margin-bottom: 20px;">
+                        <i class="fab fa-apple" style="font-size: 48px; color: #000; margin-bottom: 15px;"></i>
+                        <h2 style="color: #2c3e50; margin-bottom: 10px;">Installation sur Mac</h2>
+                        <p style="color: #555; margin-bottom: 20px; line-height: 1.6;">
+                            Installez l'application sur votre Mac pour un accès rapide depuis le Dock.
+                        </p>
+                    </div>
+                `;
+                buttonText = 'Installer';
+                instructions = 'mac';
+                break;
+
+            default:
+                message = `
+                    <div style="margin-bottom: 20px;">
+                        <i class="${this.browser.icon}" style="font-size: 48px; color: ${this.browser.color}; margin-bottom: 15px;"></i>
+                        <h2 style="color: #2c3e50; margin-bottom: 10px;">Installer l'application</h2>
+                        <p style="color: #555; margin-bottom: 20px; line-height: 1.6;">
+                            Pour une meilleure expérience, installez notre application.
+                            Cherchez l'option d'installation dans ${this.browser.name}.
+                        </p>
+                    </div>
+                `;
+                buttonText = 'Comment installer';
+                instructions = 'general';
         }
 
-        modalContent.innerHTML = `
-            ${installMessage}
+        return `
+            ${message}
             
             <div style="display: flex; flex-direction: column; gap: 10px;">
                 <button id="install-button" 
-                        style="background: linear-gradient(135deg, #3498db, #2c3e50);
+                        data-instructions="${instructions}"
+                        style="background: linear-gradient(135deg, ${this.browser.color}, #2c3e50);
                                color: white;
                                border: none;
                                padding: 15px 30px;
@@ -182,7 +267,7 @@ class InstallPrompt {
                                font-weight: 600;
                                cursor: pointer;
                                transition: transform 0.2s, box-shadow 0.2s;">
-                    ${installButtonText}
+                    ${buttonText}
                 </button>
                 
                 <button id="later-button" 
@@ -199,169 +284,192 @@ class InstallPrompt {
             </div>
             
             <p style="margin-top: 20px; font-size: 12px; color: #999;">
-                <i class="fas fa-shield-alt"></i> Installation sécurisée • Aucune donnée personnelle requise
+                <i class="fas fa-shield-alt"></i> Installation sécurisée • 
+                <small>Plateforme: ${this.platform} • Navigateur: ${this.browser.name}</small>
             </p>
         `;
+    }
 
-        modal.appendChild(modalContent);
-        document.body.appendChild(modal);
-
-        // Ajouter les styles d'animation
-        this.addAnimationStyles();
-
-        // Gérer les clics
-        document.getElementById('install-button').addEventListener('click', () => {
-            this.handleInstall();
+    setupModalEvents() {
+        const modal = document.getElementById('install-prompt-modal');
+        
+        document.getElementById('install-button').addEventListener('click', (e) => {
+            const instructionsType = e.target.dataset.instructions;
+            this.handleInstall(instructionsType);
         });
 
         document.getElementById('later-button').addEventListener('click', () => {
             this.closeModal();
+            localStorage.setItem('install_prompt_closed', Date.now().toString());
+            
             // Afficher à nouveau dans 24 heures
-            setTimeout(() => this.showInstallPrompt(), 24 * 60 * 60 * 1000);
+            setTimeout(() => {
+                if (!this.isStandalone) {
+                    this.showInstallPrompt();
+                }
+            }, 24 * 60 * 60 * 1000);
         });
 
-        // Empêcher la fermeture en cliquant à l'extérieur
+        // Empêcher la fermeture facile
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
-                // Ne pas fermer - le prompt est obligatoire
                 this.showPulseAnimation();
+                this.showMandatoryMessage();
             }
         });
-    }
-
-    showIOSInstallPrompt() {
-        if (this.isStandalone) return;
-        
-        console.log('🍎 Affichage du prompt d\'installation iOS');
-        this.showInstallPrompt();
-    }
-
-    showGenericInstallPrompt() {
-        if (this.isStandalone) return;
-        
-        console.log('🌐 Affichage du prompt d\'installation générique');
-        this.showInstallPrompt();
     }
 
     showPulseAnimation() {
         const modal = document.getElementById('install-prompt-modal');
         if (modal) {
-            modal.style.animation = 'none';
-            setTimeout(() => {
-                modal.style.animation = 'pulse 0.5s ease';
-            }, 10);
-            
+            modal.style.animation = 'pulse 0.5s ease';
             setTimeout(() => {
                 modal.style.animation = '';
             }, 500);
         }
     }
 
-    async handleInstall() {
-        console.log('🔄 Démarrage de l\'installation');
+    showMandatoryMessage() {
+        // Afficher un message temporaire
+        const message = document.createElement('div');
+        message.style.cssText = `
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #e74c3c;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            animation: fadeInOut 2s ease;
+            white-space: nowrap;
+        `;
+        message.textContent = '⚠️ Installation recommandée pour continuer';
         
-        if (this.deferredPrompt) {
-            // Pour Chrome/Edge/Opera
-            this.deferredPrompt.prompt();
-            
-            const { outcome } = await this.deferredPrompt.userChoice;
-            console.log(`Résultat de l'installation: ${outcome}`);
-            
-            this.deferredPrompt = null;
-            
-            if (outcome === 'accepted') {
-                this.showSuccessMessage();
-            }
-        } else if (this.isIOS) {
-            // Pour iOS - Afficher les instructions détaillées
-            this.showIOSInstructions();
-        } else {
-            // Pour les autres navigateurs
-            this.showGeneralInstructions();
+        const modalContent = document.querySelector('#install-prompt-modal > div');
+        modalContent.appendChild(message);
+        
+        setTimeout(() => message.remove(), 2000);
+    }
+
+    async handleInstall(instructionsType) {
+        console.log('🔄 Tentative d\'installation pour:', instructionsType);
+        
+        switch(instructionsType) {
+            case 'ios':
+                this.showIOSInstructions();
+                break;
+                
+            case 'chrome':
+            case 'windows':
+            case 'mac':
+                if (this.deferredPrompt) {
+                    await this.handleNativeInstall();
+                } else {
+                    this.showBrowserInstructions();
+                }
+                break;
+                
+            case 'android':
+                this.showAndroidInstructions();
+                break;
+                
+            default:
+                this.showGeneralInstructions();
         }
         
         this.closeModal();
     }
 
+    async handleNativeInstall() {
+        try {
+            this.deferredPrompt.prompt();
+            const { outcome } = await this.deferredPrompt.userChoice;
+            console.log(`Résultat installation: ${outcome}`);
+            
+            if (outcome === 'accepted') {
+                this.showSuccessMessage();
+            }
+            
+            this.deferredPrompt = null;
+        } catch (error) {
+            console.error('Erreur installation native:', error);
+            this.showBrowserInstructions();
+        }
+    }
+
     showIOSInstructions() {
-        const modal = document.createElement('div');
-        modal.id = 'ios-instructions-modal';
-        modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 999999;
-        `;
-
-        modal.innerHTML = `
-            <div style="background: white; border-radius: 20px; padding: 30px; width: 90%; max-width: 400px; text-align: center;">
-                <h2 style="color: #2c3e50; margin-bottom: 20px;">
-                    <i class="fab fa-apple"></i> Installation sur iOS
-                </h2>
-                
-                <div style="margin-bottom: 25px;">
-                    <div style="display: flex; align-items: center; margin-bottom: 15px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
-                        <div style="width: 40px; height: 40px; background: #007AFF; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
-                            1
-                        </div>
-                        <div style="text-align: left; flex: 1;">
-                            <strong>Appuyez sur Partager</strong>
-                            <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">
-                                <i class="fas fa-share-alt"></i> Icône de partage en bas
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <div style="display: flex; align-items: center; margin-bottom: 15px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
-                        <div style="width: 40px; height: 40px; background: #34C759; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
-                            2
-                        </div>
-                        <div style="text-align: left; flex: 1;">
-                            <strong>Faites défiler vers le bas</strong>
-                            <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">
-                                Jusqu'à voir "Sur l'écran d'accueil"
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <div style="display: flex; align-items: center; margin-bottom: 25px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
-                        <div style="width: 40px; height: 40px; background: #FF9500; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
-                            3
-                        </div>
-                        <div style="text-align: left; flex: 1;">
-                            <strong>Sélectionnez "Ajouter"</strong>
-                            <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">
-                                L'application sera installée
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="display: flex; gap: 10px;">
-                    <button id="close-ios-instructions" 
-                            style="flex: 1; background: #3498db; color: white; border: none; padding: 15px; border-radius: 10px; font-weight: 600; cursor: pointer;">
-                        J'ai compris
-                    </button>
-                </div>
-            </div>
-        `;
-
+        const modal = this.createDetailedModal(
+            '🍎 Installation sur iOS',
+            'fab fa-apple',
+            '#000',
+            [
+                'Ouvrez cette page dans <strong>Safari</strong> (pas dans Chrome/Firefox)',
+                'Appuyez sur l\'icône <span style="color: #007AFF;">Partager</span> <i class="fas fa-share-alt"></i> en bas',
+                'Faites défiler vers le bas dans le menu de partage',
+                'Sélectionnez <span style="color: #007AFF;">"Sur l\'écran d\'accueil"</span>',
+                'Appuyez sur <span style="color: #007AFF;">"Ajouter"</span> en haut à droite',
+                'L\'icône apparaîtra sur votre écran d\'accueil'
+            ]
+        );
+        
         document.body.appendChild(modal);
+    }
 
-        document.getElementById('close-ios-instructions').addEventListener('click', () => {
-            modal.remove();
-        });
+    showAndroidInstructions() {
+        const modal = this.createDetailedModal(
+            '🤖 Installation sur Android',
+            'fab fa-android',
+            '#3DDC84',
+            [
+                'Assurez-vous d\'utiliser <strong>Chrome</strong> comme navigateur',
+                'Appuyez sur le menu (trois points) en haut à droite',
+                'Sélectionnez <span style="color: #34C759;">"Installer l\'application"</span> ou "Ajouter à l\'écran d\'accueil"',
+                'Confirmez l\'installation',
+                'L\'icône apparaîtra sur votre écran d\'accueil'
+            ]
+        );
+        
+        document.body.appendChild(modal);
+    }
+
+    showBrowserInstructions() {
+        const modal = this.createDetailedModal(
+            `🌐 Installation sur ${this.browser.name}`,
+            this.browser.icon,
+            this.browser.color,
+            [
+                `Cherchez l'option d'installation dans ${this.browser.name}`,
+                'Généralement dans le menu (trois points ou lignes)',
+                'Sélectionnez "Installer l\'application" ou "Ajouter à l\'écran d\'accueil"',
+                'Confirmez l\'installation si demandé',
+                'L\'icône apparaîtra sur votre bureau ou écran d\'accueil'
+            ]
+        );
+        
+        document.body.appendChild(modal);
     }
 
     showGeneralInstructions() {
+        const modal = this.createDetailedModal(
+            '📱 Installation de l\'application',
+            'fas fa-mobile-alt',
+            '#3498db',
+            [
+                'Cette application peut être installée comme une application native',
+                'Cherchez l\'option "Installer" dans votre navigateur',
+                'Sur mobile: Menu → Ajouter à l\'écran d\'accueil',
+                'Sur ordinateur: Menu → Installer l\'application',
+                'Une fois installée, elle fonctionnera hors ligne'
+            ]
+        );
+        
+        document.body.appendChild(modal);
+    }
+
+    createDetailedModal(title, icon, color, steps) {
         const modal = document.createElement('div');
-        modal.id = 'general-instructions-modal';
         modal.style.cssText = `
             position: fixed;
             top: 0;
@@ -373,78 +481,49 @@ class InstallPrompt {
             justify-content: center;
             align-items: center;
             z-index: 999999;
+            animation: fadeIn 0.3s ease;
         `;
 
-        const browser = this.detectBrowser();
-        
-        modal.innerHTML = `
-            <div style="background: white; border-radius: 20px; padding: 30px; width: 90%; max-width: 400px; text-align: center;">
-                <h2 style="color: #2c3e50; margin-bottom: 20px;">
-                    <i class="${browser.icon}"></i> Installation sur ${browser.name}
-                </h2>
-                
-                <div style="margin-bottom: 25px; text-align: left;">
-                    <p style="color: #555; margin-bottom: 15px; line-height: 1.6;">
-                        ${browser.instructions}
-                    </p>
-                    
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-top: 15px;">
-                        <p style="margin: 0; color: #666; font-size: 14px;">
-                            <i class="fas fa-lightbulb"></i> Astuce : L'application fonctionnera hors ligne
-                        </p>
+        let stepsHTML = '';
+        steps.forEach((step, index) => {
+            stepsHTML += `
+                <div style="display: flex; align-items: flex-start; margin-bottom: 15px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+                    <div style="width: 30px; height: 30px; background: ${color}; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0;">
+                        ${index + 1}
                     </div>
+                    <div style="text-align: left; flex: 1;">
+                        <div style="color: #555; line-height: 1.5;">${step}</div>
+                    </div>
+                </div>
+            `;
+        });
+
+        modal.innerHTML = `
+            <div style="background: white; border-radius: 20px; padding: 30px; width: 90%; max-width: 500px; animation: slideUp 0.3s ease; max-height: 80vh; overflow-y: auto;">
+                <div style="display: flex; align-items: center; margin-bottom: 20px; gap: 15px;">
+                    <i class="${icon}" style="font-size: 40px; color: ${color};"></i>
+                    <h2 style="margin: 0; color: #2c3e50;">${title}</h2>
+                </div>
+                
+                <div style="margin-bottom: 25px;">
+                    ${stepsHTML}
                 </div>
                 
                 <div style="display: flex; gap: 10px;">
-                    <button id="close-general-instructions" 
-                            style="flex: 1; background: #3498db; color: white; border: none; padding: 15px; border-radius: 10px; font-weight: 600; cursor: pointer;">
-                        Fermer
+                    <button id="close-instructions" 
+                            style="flex: 1; background: ${color}; color: white; border: none; padding: 15px; border-radius: 10px; font-weight: 600; cursor: pointer;">
+                        J\'ai compris
                     </button>
                 </div>
             </div>
         `;
 
-        document.body.appendChild(modal);
-
-        document.getElementById('close-general-instructions').addEventListener('click', () => {
-            modal.remove();
+        modal.querySelector('#close-instructions').addEventListener('click', () => {
+            modal.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(() => modal.remove(), 300);
         });
-    }
 
-    detectBrowser() {
-        const userAgent = navigator.userAgent;
-        
-        if (userAgent.includes('Chrome')) {
-            return {
-                name: 'Chrome',
-                icon: 'fab fa-chrome',
-                instructions: 'Cliquez sur l\'icône "Installer l\'application" dans la barre d\'adresse ou dans le menu (trois points) > "Installer l\'application".'
-            };
-        } else if (userAgent.includes('Firefox')) {
-            return {
-                name: 'Firefox',
-                icon: 'fab fa-firefox',
-                instructions: 'Cliquez sur le menu (trois lignes) en haut à droite, puis sélectionnez "Installer" ou "Ajouter à l\'écran d\'accueil".'
-            };
-        } else if (userAgent.includes('Safari')) {
-            return {
-                name: 'Safari',
-                icon: 'fab fa-safari',
-                instructions: 'Cliquez sur "Partager" dans la barre d\'outils, puis sélectionnez "Ajouter à l\'écran d\'accueil".'
-            };
-        } else if (userAgent.includes('Edge')) {
-            return {
-                name: 'Microsoft Edge',
-                icon: 'fab fa-edge',
-                instructions: 'Cliquez sur le menu (trois points) en haut à droite, puis "Applications" > "Installer cette application".'
-            };
-        } else {
-            return {
-                name: 'votre navigateur',
-                icon: 'fas fa-globe',
-                instructions: 'Cherchez l\'option "Installer l\'application" ou "Ajouter à l\'écran d\'accueil" dans les paramètres de votre navigateur.'
-            };
-        }
+        return modal;
     }
 
     showSuccessMessage() {
@@ -490,7 +569,10 @@ class InstallPrompt {
     }
 
     addAnimationStyles() {
+        if (document.getElementById('install-animations')) return;
+        
         const style = document.createElement('style');
+        style.id = 'install-animations';
         style.textContent = `
             @keyframes fadeIn {
                 from { opacity: 0; }
@@ -522,26 +604,57 @@ class InstallPrompt {
                 50% { transform: scale(1.02); }
                 100% { transform: scale(1); }
             }
+            
+            @keyframes fadeInOut {
+                0% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+                20% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+            }
         `;
         document.head.appendChild(style);
     }
 }
 
-// Initialiser le prompt d'installation
+// Initialisation
 let installPrompt;
 
-// Attendre que la page soit chargée
+// Vérifier si on doit afficher le prompt
+function shouldShowPrompt() {
+    if (installPrompt?.isStandalone) return false;
+    
+    const lastClosed = localStorage.getItem('install_prompt_closed');
+    if (lastClosed) {
+        const timeSinceClosed = Date.now() - parseInt(lastClosed);
+        // Afficher seulement après 1 heure minimum
+        return timeSinceClosed > (60 * 60 * 1000);
+    }
+    
+    return true;
+}
+
+// Initialiser après le chargement
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
-            installPrompt = new InstallPrompt();
+            if (shouldShowPrompt()) {
+                installPrompt = new InstallPrompt();
+            }
         }, 1000);
     });
 } else {
     setTimeout(() => {
-        installPrompt = new InstallPrompt();
+        if (shouldShowPrompt()) {
+            installPrompt = new InstallPrompt();
+        }
     }, 1000);
 }
 
-// Exposer l'objet globalement pour un accès manuel
-window.installPrompt = installPrompt;
+// Exposer pour un déclenchement manuel
+window.showInstallPrompt = function() {
+    if (!installPrompt) {
+        installPrompt = new InstallPrompt();
+    } else if (!installPrompt.isStandalone) {
+        installPrompt.showInstallPrompt();
+    }
+};
