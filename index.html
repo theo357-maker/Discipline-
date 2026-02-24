@@ -1593,6 +1593,12 @@
             }, 3000);
         }
 
+        // Fonction pour obtenir le nom du jour en français
+        function getDayName(date) {
+            const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+            return days[date.getDay()];
+        }
+
         // ===== AUTHENTIFICATION =====
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -1863,7 +1869,9 @@
                 const daysInMonth = lastDay.getDate();
                 let headerHTML = '<th class="teacher-name">Nom complet</th>';
                 for (let day = 1; day <= daysInMonth; day++) {
-                    headerHTML += `<th>${day}</th>`;
+                    const currentDate = new Date(year, month, day);
+                    const dayName = getDayName(currentDate);
+                    headerHTML += `<th><div>${day}</div><div style="font-size: var(--text-xs); font-weight: normal;">${dayName}</div></th>`;
                 }
                 document.querySelector('#teacher-attendance-table thead tr').innerHTML = headerHTML;
 
@@ -1937,7 +1945,13 @@
                 const startDate = firstDay.toISOString().split('T')[0];
                 const endDate = lastDay.toISOString().split('T')[0];
                 
-                const attendanceSnap = await getDocs(collection(db, 'student_attendance'));
+                const attendanceQuery = query(
+                    collection(db, 'student_attendance'),
+                    where('date', '>=', startDate),
+                    where('date', '<=', endDate)
+                );
+                
+                const attendanceSnap = await getDocs(attendanceQuery);
                 studentAttendanceData = {};
                 
                 attendanceSnap.forEach(doc => {
@@ -1953,7 +1967,9 @@
                 const daysInMonth = lastDay.getDate();
                 let headerHTML = '<th class="teacher-name">Nom complet</th>';
                 for (let day = 1; day <= daysInMonth; day++) {
-                    headerHTML += `<th>${day}</th>`;
+                    const currentDate = new Date(year, month, day);
+                    const dayName = getDayName(currentDate);
+                    headerHTML += `<th><div>${day}</div><div style="font-size: var(--text-xs); font-weight: normal;">${dayName}</div></th>`;
                 }
                 document.querySelector('#student-attendance-table thead tr').innerHTML = headerHTML;
 
