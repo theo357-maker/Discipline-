@@ -1182,49 +1182,41 @@
         <!-- Sidebar Overlay (mobile) -->
         <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-        <!-- Navigation Sidebar -->
-        <nav class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <h3>
-                    <i class="fas fa-gavel"></i>
-                    Discipline
-                </h3>
-            </div>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="#" class="nav-link active" data-page="dashboard">
-                        <i class="fas fa-tachometer-alt"></i>
-                        Tableau de bord
-                    </a>
-                </li>
-                <li class="nav-item has-submenu">
-                    <a href="#" class="nav-link">
-                        <i class="fas fa-user-check"></i>
-                        Présence
-                    </a>
-                    <ul class="submenu">
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" data-page="teacher-attendance">
-                                <i class="fas fa-chalkboard-teacher"></i>
-                                Enseignants
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" data-page="student-attendance">
-                                <i class="fas fa-users"></i>
-                                Élèves
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link" data-page="student-incidents">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        Incidents Élèves
-                    </a>
-                </li>
-            </ul>
-        </nav>
+       <!-- Navigation Sidebar -->
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h3>
+            <i class="fas fa-gavel"></i>
+            Discipline
+        </h3>
+    </div>
+    <ul class="nav-menu">
+        <li class="nav-item">
+            <a href="#" class="nav-link active" data-page="dashboard">
+                <i class="fas fa-tachometer-alt"></i>
+                Tableau de bord
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="#" class="nav-link" data-page="teacher-attendance">
+                <i class="fas fa-chalkboard-teacher"></i>
+                Présence Enseignants
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="#" class="nav-link" data-page="student-attendance">
+                <i class="fas fa-users"></i>
+                Présence Élèves
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="#" class="nav-link" data-page="student-incidents">
+                <i class="fas fa-exclamation-triangle"></i>
+                Incidents Élèves
+            </a>
+        </li>
+    </ul>
+</nav>
 
         <!-- Contenu principal -->
         <div class="main-content">
@@ -1904,100 +1896,194 @@
             }
         }
 
-        async function loadTeacherAttendanceTable(month, year) {
-            const container = document.getElementById('teacher-attendance-table-container');
-            const tableBody = document.getElementById('teacher-attendance-body');
-            
-            container.classList.remove('hidden');
-            tableBody.innerHTML = '<tr><td colspan="32">Chargement...</td></tr>';
-            
-            try {
-                const teachersSnap = await getDocs(collection(db, 'teachers'));
-                if (teachersSnap.empty) {
-                    tableBody.innerHTML = '<tr><td colspan="32">Aucun enseignant</td></tr>';
-                    return;
-                }
-
-                const firstDay = new Date(year, month, 1);
-                const lastDay = new Date(year, month + 1, 0);
-                const startDate = firstDay.toISOString().split('T')[0];
-                const endDate = lastDay.toISOString().split('T')[0];
-                
-                const attendanceQuery = query(
-                    collection(db, 'teacher_attendance'),
-                    where('date', '>=', startDate),
-                    where('date', '<=', endDate)
-                );
-                
-                const attendanceSnap = await getDocs(attendanceQuery);
-                teacherAttendanceData = {};
-                
-                attendanceSnap.forEach(doc => {
-                    const data = doc.data();
-                    if (!teacherAttendanceData[data.teacherId]) {
-                        teacherAttendanceData[data.teacherId] = {};
-                    }
-                    teacherAttendanceData[data.teacherId][data.date] = data.status;
-                });
-
-                const daysInMonth = lastDay.getDate();
-                let headerHTML = '<th class="teacher-name">Nom complet</th>';
-                for (let day = 1; day <= daysInMonth; day++) {
-                    const currentDate = new Date(year, month, day);
-                    const dayName = getDayName(currentDate);
-                    headerHTML += `<th><div>${day}</div><div style="font-size: var(--text-xs); font-weight: normal;">${dayName}</div></th>`;
-                }
-                document.querySelector('#teacher-attendance-table thead tr').innerHTML = headerHTML;
-
-                tableBody.innerHTML = '';
-                teachersSnap.forEach(doc => {
-                    const teacher = doc.data();
-                    const teacherId = teacher.uid || doc.id;
-                    
-                    let rowHTML = `<td class="teacher-name">${teacher.fullName}</td>`;
-                    
-                    for (let day = 1; day <= daysInMonth; day++) {
-                        const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-                        const status = teacherAttendanceData[teacherId]?.[dateStr] || '';
-                        
-                        let statusIcon = '';
-                        let statusClass = '';
-                        
-                        if (status === 'present') { statusIcon = '✅'; statusClass = 'present'; }
-                        else if (status === 'absent') { statusIcon = '🚫'; statusClass = 'absent'; }
-                        else if (status === 'late') { statusIcon = '🟠'; statusClass = 'late'; }
-                        
-                        rowHTML += `<td class="day-cell ${statusClass}" data-teacher="${teacherId}" data-date="${dateStr}">${statusIcon}</td>`;
-                    }
-                    
-                    tableBody.innerHTML += `<tr>${rowHTML}</tr>`;
-                });
-
-                // Ajouter les événements de clic
-                document.querySelectorAll('.day-cell[data-teacher]').forEach(cell => {
-                    cell.addEventListener('click', function() {
-                        const teacherId = this.dataset.teacher;
-                        const dateStr = this.dataset.date;
-                        
-                        if (!teacherAttendanceData[teacherId]) {
-                            teacherAttendanceData[teacherId] = {};
-                        }
-                        
-                        teacherAttendanceData[teacherId][dateStr] = currentSelectedStatus;
-                        
-                        document.querySelectorAll(`[data-teacher="${teacherId}"][data-date="${dateStr}"]`).forEach(c => {
-                            c.className = `day-cell ${currentSelectedStatus}`;
-                            c.innerHTML = currentSelectedStatus === 'present' ? '✅' : 
-                                          currentSelectedStatus === 'absent' ? '🚫' : '🟠';
-                        });
-                    });
-                });
-            } catch (error) {
-                console.error(error);
-                tableBody.innerHTML = '<tr><td colspan="32">Erreur de chargement</td></tr>';
-            }
+ // Version optimisée du chargement des présences
+async function loadTeacherAttendanceTable(month, year) {
+    const container = document.getElementById('teacher-attendance-table-container');
+    const tableBody = document.getElementById('teacher-attendance-body');
+    
+    container.classList.remove('hidden');
+    tableBody.innerHTML = '<tr><td colspan="32">Chargement rapide...</td></tr>';
+    
+    try {
+        // Charger enseignants et présences en parallèle
+        const [teachersSnap, attendanceSnap] = await Promise.all([
+            getDocs(collection(db, 'teachers')),
+            getDocs(collection(db, 'teacher_attendance'))
+        ]);
+        
+        if (teachersSnap.empty) {
+            tableBody.innerHTML = '<tr><td colspan="32">Aucun enseignant</td></tr>';
+            return;
         }
 
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const startDate = firstDay.toISOString().split('T')[0];
+        const endDate = lastDay.toISOString().split('T')[0];
+        
+        // Construire l'objet de données plus efficacement
+        teacherAttendanceData = {};
+        attendanceSnap.forEach(doc => {
+            const data = doc.data();
+            if (data.date >= startDate && data.date <= endDate) {
+                if (!teacherAttendanceData[data.teacherId]) {
+                    teacherAttendanceData[data.teacherId] = {};
+                }
+                teacherAttendanceData[data.teacherId][data.date] = data.status;
+            }
+        });
+
+        const daysInMonth = lastDay.getDate();
+        
+        // Construire l'en-tête
+        let headerHTML = '<th class="teacher-name">Nom complet</th>';
+        for (let day = 1; day <= daysInMonth; day++) {
+            const currentDate = new Date(year, month, day);
+            const dayName = getDayName(currentDate);
+            headerHTML += `<th><div>${day}</div><div style="font-size: var(--text-xs); font-weight: normal;">${dayName}</div></th>`;
+        }
+        document.querySelector('#teacher-attendance-table thead tr').innerHTML = headerHTML;
+
+        // Construire le tableau en une seule fois
+        let tableHTML = '';
+        teachersSnap.forEach(doc => {
+            const teacher = doc.data();
+            const teacherId = teacher.uid || doc.id;
+            
+            let rowHTML = `<td class="teacher-name">${teacher.fullName}</td>`;
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                const status = teacherAttendanceData[teacherId]?.[dateStr] || '';
+                
+                let statusIcon = '';
+                let statusClass = '';
+                
+                if (status === 'present') { statusIcon = '✅'; statusClass = 'present'; }
+                else if (status === 'absent') { statusIcon = '🚫'; statusClass = 'absent'; }
+                else if (status === 'late') { statusIcon = '🟠'; statusClass = 'late'; }
+                
+                rowHTML += `<td class="day-cell ${statusClass}" data-teacher="${teacherId}" data-date="${dateStr}">${statusIcon}</td>`;
+            }
+            
+            tableHTML += `<tr>${rowHTML}</tr>`;
+        });
+        
+        tableBody.innerHTML = tableHTML;
+
+        // Ajouter les événements de clic (délégué pour meilleure performance)
+        document.querySelector('#teacher-attendance-table').addEventListener('click', function(e) {
+            const cell = e.target.closest('.day-cell[data-teacher]');
+            if (cell) {
+                const teacherId = cell.dataset.teacher;
+                const dateStr = cell.dataset.date;
+                
+                if (!teacherAttendanceData[teacherId]) {
+                    teacherAttendanceData[teacherId] = {};
+                }
+                
+                teacherAttendanceData[teacherId][dateStr] = currentSelectedStatus;
+                
+                cell.className = `day-cell ${currentSelectedStatus}`;
+                cell.innerHTML = currentSelectedStatus === 'present' ? '✅' : 
+                                currentSelectedStatus === 'absent' ? '🚫' : '🟠';
+            }
+        });
+        
+    } catch (error) {
+        console.error(error);
+        tableBody.innerHTML = '<tr><td colspan="32">Erreur de chargement</td></tr>';
+    }
+}
+
+async function loadRecentActivities() {
+    const activitiesContainer = document.getElementById('recent-activities');
+    
+    try {
+        const incidentsQuery = query(
+            collection(db, 'incidents'),
+            orderBy('createdAt', 'desc'),
+            limit(15)
+        );
+        
+        const incidentsSnap = await getDocs(incidentsQuery);
+        
+        if (incidentsSnap.empty) {
+            activitiesContainer.innerHTML = '<p class="text-gray-500">Aucune activité récente</p>';
+            return;
+        }
+        
+        let html = '<div style="max-height: 500px; overflow-y: auto;">';
+        
+        incidentsSnap.forEach(doc => {
+            const inc = doc.data();
+            const date = inc.createdAt ? inc.createdAt.toDate() : new Date();
+            
+            // Déterminer la couleur selon l'impact sur le score
+            let bgColor = '#fee2e2'; // danger léger
+            let icon = 'fa-exclamation-triangle';
+            let textColor = '#991b1b';
+            
+            if (inc.scoreIncrease > 10) {
+                bgColor = '#ef4444'; // rouge vif
+                textColor = 'white';
+            } else if (inc.type === 'Réinitialisation') {
+                bgColor = '#10b981'; // vert
+                icon = 'fa-undo';
+                textColor = 'white';
+            }
+            
+            html += `
+                <div style="
+                    display: flex;
+                    gap: var(--space-md);
+                    padding: var(--space-md);
+                    border-bottom: 1px solid var(--gray-200);
+                    background-color: white;
+                ">
+                    <div style="
+                        width: 45px;
+                        height: 45px;
+                        border-radius: var(--radius);
+                        background-color: ${bgColor};
+                        color: ${textColor};
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 1.25rem;
+                    ">
+                        <i class="fas ${icon}"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <strong style="color: var(--gray-800);">${inc.type}</strong>
+                            <span style="background: ${inc.scoreIncrease > 0 ? '#ef4444' : '#10b981'}; color: white; padding: 2px 8px; border-radius: 12px; font-size: var(--text-xs);">
+                                ${inc.scoreIncrease > 0 ? '+' : ''}${inc.scoreIncrease}%
+                            </span>
+                        </div>
+                        <p style="margin: 4px 0; color: var(--gray-700);">
+                            ${inc.studentName} (${inc.studentClass})
+                        </p>
+                        <p style="font-size: var(--text-sm); color: var(--gray-600); margin-bottom: 4px;">
+                            ${inc.description || ''}
+                        </p>
+                        <div style="display: flex; justify-content: space-between; font-size: var(--text-xs); color: var(--gray-500);">
+                            <span>${formatDate(date)} à ${formatTime(date)}</span>
+                            <span>Score: ${inc.previousScore || 0}% → ${inc.newScore || 0}%</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        activitiesContainer.innerHTML = html;
+        
+    } catch (error) {
+        console.error('Erreur:', error);
+        activitiesContainer.innerHTML = '<p class="text-danger">Erreur de chargement</p>';
+    }
+}
         async function loadStudentAttendanceTable(classId, month, year) {
             const container = document.getElementById('student-attendance-table-container');
             const tableBody = document.getElementById('student-attendance-body');
@@ -2096,104 +2182,130 @@
             }
         }
 
-        async function saveTeacherAttendance() {
-            try {
-                const batch = writeBatch(db);
-                let count = 0;
+        // Version optimisée pour sauvegarde rapide des présences enseignants
+async function saveTeacherAttendance() {
+    try {
+        const batch = writeBatch(db);
+        let count = 0;
+        
+        for (const teacherId in teacherAttendanceData) {
+            for (const dateStr in teacherAttendanceData[teacherId]) {
+                const status = teacherAttendanceData[teacherId][dateStr];
+                if (!status) continue;
                 
-                for (const teacherId in teacherAttendanceData) {
-                    for (const dateStr in teacherAttendanceData[teacherId]) {
-                        const status = teacherAttendanceData[teacherId][dateStr];
-                        if (!status) continue;
-                        
-                        const existingQuery = query(
-                            collection(db, 'teacher_attendance'),
-                            where('teacherId', '==', teacherId),
-                            where('date', '==', dateStr)
-                        );
-                        
-                        const existingSnap = await getDocs(existingQuery);
-                        
-                        if (!existingSnap.empty) {
-                            batch.update(doc(db, 'teacher_attendance', existingSnap.docs[0].id), {
-                                status,
-                                updatedAt: serverTimestamp()
-                            });
-                        } else {
-                            const newDocRef = doc(collection(db, 'teacher_attendance'));
-                            batch.set(newDocRef, {
-                                teacherId,
-                                date: dateStr,
-                                status,
-                                pointedBy: currentDisciplineUser.uid,
-                                createdAt: serverTimestamp(),
-                                updatedAt: serverTimestamp()
-                            });
-                        }
-                        count++;
-                    }
-                }
+                // Utiliser un ID composé pour éviter les doublons et permettre la mise à jour directe
+                const docId = `${teacherId}_${dateStr}`;
+                const docRef = doc(db, 'teacher_attendance', docId);
                 
-                await batch.commit();
-                showNotification(`${count} présence(s) sauvegardée(s)`);
-            } catch (error) {
-                console.error(error);
-                showNotification('Erreur lors de la sauvegarde', 'error');
+                batch.set(docRef, {
+                    teacherId,
+                    date: dateStr,
+                    status,
+                    pointedBy: currentDisciplineUser.uid,
+                    updatedAt: serverTimestamp()
+                }, { merge: true }); // merge: true permet de mettre à jour si existe, créer si n'existe pas
+                
+                count++;
             }
         }
+        
+        if (count > 0) {
+            await batch.commit();
+            showNotification(`${count} présence(s) sauvegardée(s) instantanément`);
+        } else {
+            showNotification('Aucune présence à sauvegarder', 'warning');
+        }
+    } catch (error) {
+        console.error(error);
+        showNotification('Erreur lors de la sauvegarde', 'error');
+    }
+}
 
-        async function saveStudentAttendance() {
-            const classId = document.getElementById('student-class').value;
-            if (!classId) {
-                showNotification('Veuillez sélectionner une classe', 'error');
-                return;
-            }
-            
-            try {
-                const batch = writeBatch(db);
-                let count = 0;
+// Version optimisée pour sauvegarde rapide des présences élèves
+async function saveStudentAttendance() {
+    const classId = document.getElementById('student-class').value;
+    if (!classId) {
+        showNotification('Veuillez sélectionner une classe', 'error');
+        return;
+    }
+    
+    try {
+        const batch = writeBatch(db);
+        let count = 0;
+        
+        for (const studentId in studentAttendanceData) {
+            for (const dateStr in studentAttendanceData[studentId]) {
+                const status = studentAttendanceData[studentId][dateStr];
+                if (!status) continue;
                 
-                for (const studentId in studentAttendanceData) {
-                    for (const dateStr in studentAttendanceData[studentId]) {
-                        const status = studentAttendanceData[studentId][dateStr];
-                        if (!status) continue;
-                        
-                        const existingQuery = query(
-                            collection(db, 'student_attendance'),
-                            where('studentId', '==', studentId),
-                            where('date', '==', dateStr)
-                        );
-                        
-                        const existingSnap = await getDocs(existingQuery);
-                        
-                        if (!existingSnap.empty) {
-                            batch.update(doc(db, 'student_attendance', existingSnap.docs[0].id), {
-                                status,
-                                updatedAt: serverTimestamp()
-                            });
-                        } else {
-                            const newDocRef = doc(collection(db, 'student_attendance'));
-                            batch.set(newDocRef, {
-                                studentId,
-                                classId,
-                                date: dateStr,
-                                status,
-                                pointedBy: currentDisciplineUser.uid,
-                                createdAt: serverTimestamp(),
-                                updatedAt: serverTimestamp()
-                            });
-                        }
-                        count++;
-                    }
-                }
+                // Utiliser un ID composé pour éviter les doublons
+                const docId = `${studentId}_${dateStr}`;
+                const docRef = doc(db, 'student_attendance', docId);
                 
-                await batch.commit();
-                showNotification(`${count} présence(s) sauvegardée(s)`);
-            } catch (error) {
-                console.error(error);
-                showNotification('Erreur lors de la sauvegarde', 'error');
+                batch.set(docRef, {
+                    studentId,
+                    classId,
+                    date: dateStr,
+                    status,
+                    pointedBy: currentDisciplineUser.uid,
+                    updatedAt: serverTimestamp()
+                }, { merge: true }); // merge: true pour mise à jour rapide
+                
+                count++;
             }
         }
+        
+        if (count > 0) {
+            await batch.commit();
+            showNotification(`${count} présence(s) sauvegardée(s) instantanément`);
+        } else {
+            showNotification('Aucune présence à sauvegarder', 'warning');
+        }
+    } catch (error) {
+        console.error(error);
+        showNotification('Erreur lors de la sauvegarde', 'error');
+    }
+}
+
+// Version encore plus rapide avec Promise.all (si vous avez beaucoup de données)
+async function saveTeacherAttendanceFast() {
+    try {
+        const operations = [];
+        let count = 0;
+        
+        for (const teacherId in teacherAttendanceData) {
+            for (const dateStr in teacherAttendanceData[teacherId]) {
+                const status = teacherAttendanceData[teacherId][dateStr];
+                if (!status) continue;
+                
+                const docId = `${teacherId}_${dateStr}`;
+                const docRef = doc(db, 'teacher_attendance', docId);
+                
+                operations.push(
+                    setDoc(docRef, {
+                        teacherId,
+                        date: dateStr,
+                        status,
+                        pointedBy: currentDisciplineUser.uid,
+                        updatedAt: serverTimestamp()
+                    }, { merge: true })
+                );
+                
+                count++;
+            }
+        }
+        
+        if (count > 0) {
+            await Promise.all(operations);
+            showNotification(`${count} présence(s) sauvegardée(s) instantanément`);
+        } else {
+            showNotification('Aucune présence à sauvegarder', 'warning');
+        }
+    } catch (error) {
+        console.error(error);
+        showNotification('Erreur lors de la sauvegarde', 'error');
+    }
+}
 
         async function publishAttendance(type) {
             try {
